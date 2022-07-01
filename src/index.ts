@@ -1,3 +1,3 @@
 /** @ignore @module */
-export { Contract, FunctionCallOptions } from './contract';
+export { AnyContract, Contract, FunctionCallOptions } from './contract';
 export * from './abi';

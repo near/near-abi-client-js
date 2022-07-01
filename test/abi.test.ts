@@ -1,6 +1,6 @@
-import schema from "./test_schema.json";
-import { Contract } from '../src/index';
-import { Account, connect, keyStores } from 'near-api-js';
+import schema from './test_schema.json';
+import { Contract, AnyContract } from '../src/index';
+import { connect, keyStores } from 'near-api-js';
 
 test('ABI deserialization', async () => {
     const keyStore = new keyStores.InMemoryKeyStore();
@@ -10,20 +10,24 @@ test('ABI deserialization', async () => {
         masterAccount: 'test.near',
         headers: {},
         deps: {
-            keyStore
-        }
+            keyStore,
+        },
     };
     const near = await connect(config);
-    new Account(near.connection, 'test.testnet');
-    const contract = new Contract(near.connection, 'test', schema);
+    // const account = new Account(near.connection, 'test.testnet');
+    const contract = new Contract(
+        near.connection,
+        'test',
+        schema
+    ) as AnyContract;
 
-    // const function_call = contract.add([1, 2]);
-    // expect(function_call.view !== undefined);
-    // // function should be view only
-    // expect(function_call.callFrom === undefined);
+    const function_call = contract.add([1, 2]);
+    expect(function_call.view !== undefined);
+    // function should be view only
+    expect(function_call.callFrom === undefined);
 
-    // console.log(contract);
-    // console.log(contract.add([1, 2]));
+    console.log(contract);
+    console.log(contract.add([1, 2]));
 
     // it's a view contract, no change.
     // let result = await contract.add([1, 2]).callFrom(account);

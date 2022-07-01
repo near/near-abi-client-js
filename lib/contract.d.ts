@@ -22,6 +22,9 @@ export interface CallableFunction {
     callFrom?(account: Account, opts?: FunctionCallOptions): Promise<FinalExecutionOutcome>;
     view(): Promise<any>;
 }
+export interface AnyContract extends Contract {
+    [x: string]: any;
+}
 export declare class Contract {
     readonly connection: Connection;
     readonly contractId: string;

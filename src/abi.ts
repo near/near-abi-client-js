@@ -1,5 +1,3 @@
-// TODO these types are probably all wrong, just basing off existing schema
-
 export interface ABI {
     abi_schema_version: string;
     metadata?: ContractMetadata;

@@ -115,6 +115,14 @@ export interface CallableFunction {
     view(): Promise<any>;
 }
 
+// TODO this type likely would be removed or made generic to have actual functions rather than
+// TODO allowing any arbirary fields.
+export interface AnyContract extends Contract {
+    // Allow any other types on the contract that are not defined.
+    // This is ideally not needed when TS generated from ABI.
+    [x: string]: any;
+  }
+
 export class Contract {
     readonly connection: Connection;
     readonly contractId: string;

@@ -1,27 +1,40 @@
 export interface ABI {
-    schema_version: string;
-    methods: ABIFunction[];
-    types: ABIType[];
+    abi_schema_version: string;
+    metadata?: ContractMetadata;
+    abi: ABIData;
+}
+export interface ABIData {
+    functions: ABIFunction[];
+    /** Root JSON schema for the ABI */
+    root_schema: any;
+}
+export interface ContractMetadata {
+    name: string;
+    version: string;
+    authors: string[];
 }
 export interface ABIFunction {
     name: string;
     is_view?: boolean;
     is_init?: boolean;
-    args?: number[];
+    params?: ABIParameterInfo[];
     callbacks?: any[];
-    callbacks_vec?: any[];
-    result: number | null;
+    callbacks_vec?: ABITypeInfo;
+    result: ABITypeInfo;
+}
+export interface ABITypeInfo {
+    type_schema: Reference | ABIType;
+    serialization_type: string;
+}
+export interface ABIParameterInfo extends ABITypeInfo {
+    name: string;
+}
+export interface Reference {
+    $ref: string;
 }
 export interface ABIType {
-    id: number;
-    schema: ABISchema;
-}
-export interface ABISchema {
-    title: string;
-    type: string | string[];
-    items?: ABIItem[];
-    maxItems?: number;
-    minItems?: number;
+    type: string;
+    [k: string]: any;
 }
 export interface ABIItem {
     type: string;
