@@ -5,7 +5,7 @@
   "main": "lib/index.js",
   "browser": "lib/browser-index.js",
   "types": "lib/index.d.ts",
-  "author": "Austin Abell",
+  "author": "Pagoda",
   "license": "(MIT AND Apache-2.0)",
   "dependencies": {
     "near-api-js": "^0.44.2"
