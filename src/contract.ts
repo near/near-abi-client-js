@@ -1,7 +1,10 @@
 import BN from 'bn.js';
 import { Account, Connection } from 'near-api-js';
 import { FinalExecutionOutcome } from 'near-api-js/lib/providers';
-import { CodeResult, getTransactionLastResult } from 'near-api-js/lib/providers/provider';
+import {
+    CodeResult,
+    getTransactionLastResult,
+} from 'near-api-js/lib/providers/provider';
 import { ArgumentTypeError } from 'near-api-js/lib/utils/errors';
 import { ABI } from './abi';
 
@@ -105,9 +108,13 @@ async function viewInternal(
     );
 }
 
+export class AbiValidationError extends Error {
+    constructor(error: string) {
+        super(`ABI validation error: ${error}`);
+    }
+}
+
 export interface CallableFunction {
-    // TODO naming, maybe call?
-    // TODO Account and returning NAJ type, prob not ideal
     callFrom?(
         account: Account,
         opts?: FunctionCallOptions
@@ -115,43 +122,44 @@ export interface CallableFunction {
     view(): Promise<any>;
 }
 
-// TODO this type likely would be removed or made generic to have actual functions rather than
-// TODO allowing any arbirary fields.
+/**
+ * Convenience type for a contract that does not use an ABI.
+ */
 export interface AnyContract extends Contract {
     // Allow any other types on the contract that are not defined.
     // This is ideally not needed when TS generated from ABI.
     [x: string]: any;
-  }
+}
 
 export class Contract {
     readonly connection: Connection;
     readonly contractId: string;
-    readonly abi?: ABI;
+    readonly abi: ABI;
 
     /**
      * @param connection Connection to NEAR network through RPC.
      * @param contractId NEAR account id where the contract is deployed.
      * @param abi ABI schema which will be used to generate methods to be called on this Contract
      */
-    // TODO not ideal to include NAJ type in constructor
-    constructor(connection: Connection, contractId: string, abi?: ABI) {
+    constructor(connection: Connection, contractId: string, abi: ABI) {
         this.connection = connection;
         this.contractId = contractId;
         this.abi = abi;
 
-        // TODO this abi is optional, but are the only methods on Contract right now.
-        // TODO Maybe worth making it useful outside of just ABI calls or making it mandatory?
-        this.abi?.abi.functions.forEach((fn) => {
+        this.abi.abi.functions.forEach((fn) => {
             const funcName = fn.name;
             const isView = fn.is_view;
             // Create method on this contract object to be able to call methods.
             Object.defineProperty(this, funcName, {
                 writable: false,
                 enumerable: true,
-                // TODO args could be better here, would be ideal to have positional args maybe?
-                // TODO at least validate the number of args
                 value: (...args: any[]) => {
                     const { connection, contractId } = this;
+                    if (fn.params && args.length != fn.params.length) {
+                        return new AbiValidationError(
+                            `Invalid parameter length for method ${fn.name}, expected ${fn.params.length}`
+                        );
+                    }
                     const func: CallableFunction = {
                         // Include a call function if the function is not view only.
                         callFrom: isView

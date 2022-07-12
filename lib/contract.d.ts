@@ -18,10 +18,16 @@ export interface FunctionCallOptions {
      */
     walletCallbackUrl?: string;
 }
+export declare class AbiValidationError extends Error {
+    constructor(error: string);
+}
 export interface CallableFunction {
     callFrom?(account: Account, opts?: FunctionCallOptions): Promise<FinalExecutionOutcome>;
     view(): Promise<any>;
 }
+/**
+ * Convenience type for a contract that does not use an ABI.
+ */
 export interface AnyContract extends Contract {
     [x: string]: any;
 }
