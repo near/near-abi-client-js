@@ -6,7 +6,7 @@ import {
     getTransactionLastResult,
 } from 'near-api-js/lib/providers/provider';
 import { ArgumentTypeError } from 'near-api-js/lib/utils/errors';
-import { ABI } from './abi';
+import { ABI, ABIParameterInfo } from './abi';
 
 export interface FunctionCallOptions {
     /** max amount of gas that method call can use */
@@ -131,6 +131,37 @@ export interface AnyContract extends Contract {
     [x: string]: any;
 }
 
+function serializeArgs(
+    fn_name: string,
+    args: any[],
+    params_abi?: ABIParameterInfo[]
+): Buffer {
+    if (args) {
+        if (!params_abi) {
+            throw new AbiValidationError(
+                `${fn_name} accepts no arguments, got ${args}`
+            );
+        }
+        // TODO support providing an object as a single parameter
+        else if (args.length != params_abi.length) {
+            throw new AbiValidationError(
+                `Invalid number of parameters for ${fn_name}, expected ${params_abi.length} got ${args.length}`
+            );
+        } else {
+            // TODO serialize as an object
+            // TODO serialize based on protocol
+            return serializeJSON(args);
+        }
+    } else {
+        if (params_abi) {
+            throw new AbiValidationError(
+                `Passed no parameters for ${fn_name}, expected ${params_abi.length}`
+            );
+        }
+        return Buffer.alloc(0);
+    }
+}
+
 export class Contract {
     private _connection: Connection;
     public get connection(): Connection {
@@ -181,30 +212,22 @@ export class Contract {
                                 account,
                                 opts
                             ): Promise<FinalExecutionOutcome> {
-                                // TODO should serialize based on protocol
-                                const paramBytes = args
-                                    ? serializeJSON(args)
-                                    : Buffer.alloc(0);
                                 // Using inner NAJ APIs for result for consistency, but this might
                                 // not be ideal API.
                                 return callInternal(
                                     account,
                                     contractId,
                                     funcName,
-                                    paramBytes,
+                                    serializeArgs(funcName, args, fn.params),
                                     opts
                                 );
                             },
                         view: async function (): Promise<any> {
-                            // TODO this should serialize based on protocol from schema
-                            const paramBytes = args
-                                ? serializeJSON(args)
-                                : Buffer.alloc(0);
                             const returnBytes = await viewInternal(
                                 connection,
                                 contractId,
                                 funcName,
-                                paramBytes
+                                serializeArgs(funcName, args, fn.params)
                             );
                             // TODO deserialize based on protocol from schema
                             return deserializeJSON(returnBytes);
