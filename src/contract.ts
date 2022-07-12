@@ -155,8 +155,9 @@ export class Contract {
                 enumerable: true,
                 value: (...args: any[]) => {
                     const { connection, contractId } = this;
+                    // TODO support providing an object as a single parameter
                     if (fn.params && args.length != fn.params.length) {
-                        return new AbiValidationError(
+                        throw new AbiValidationError(
                             `Invalid parameter length for method ${fn.name}, expected ${fn.params.length}`
                         );
                     }

@@ -21,13 +21,10 @@ test('ABI deserialization', async () => {
         schema
     ) as AnyContract;
 
-    const function_call = contract.add([1, 2]);
+    const function_call = contract.add([1, 2], [3, 4], 5);
     expect(function_call.view !== undefined);
     // function should be view only
     expect(function_call.callFrom === undefined);
-
-    console.log(contract);
-    console.log(contract.add([1, 2]));
 
     // it's a view contract, no change.
     // let result = await contract.add([1, 2]).callFrom(account);

@@ -34,11 +34,11 @@ export interface AnyContract extends Contract {
 export declare class Contract {
     readonly connection: Connection;
     readonly contractId: string;
-    readonly abi?: ABI;
+    readonly abi: ABI;
     /**
      * @param connection Connection to NEAR network through RPC.
      * @param contractId NEAR account id where the contract is deployed.
      * @param abi ABI schema which will be used to generate methods to be called on this Contract
      */
-    constructor(connection: Connection, contractId: string, abi?: ABI);
+    constructor(connection: Connection, contractId: string, abi: ABI);
 }
