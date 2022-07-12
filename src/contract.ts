@@ -132,9 +132,9 @@ export interface AnyContract extends Contract {
 }
 
 export class Contract {
-    readonly connection: Connection;
-    readonly contractId: string;
-    readonly abi: ABI;
+    private _connection: Connection;
+    private _contractId: string;
+    private _schema: ABI;
 
     /**
      * @param connection Connection to NEAR network through RPC.
@@ -142,11 +142,11 @@ export class Contract {
      * @param abi ABI schema which will be used to generate methods to be called on this Contract
      */
     constructor(connection: Connection, contractId: string, abi: ABI) {
-        this.connection = connection;
-        this.contractId = contractId;
-        this.abi = abi;
+        this._connection = connection;
+        this._contractId = contractId;
+        this._schema = abi;
 
-        this.abi.abi.functions.forEach((fn) => {
+        this._schema.abi.functions.forEach((fn) => {
             const funcName = fn.name;
             const isView = fn.is_view;
             // Create method on this contract object to be able to call methods.
@@ -154,7 +154,8 @@ export class Contract {
                 writable: false,
                 enumerable: true,
                 value: (...args: any[]) => {
-                    const { connection, contractId } = this;
+                    const connection = this._connection;
+                    const contractId = this._contractId;
                     // TODO support providing an object as a single parameter
                     if (fn.params && args.length != fn.params.length) {
                         throw new AbiValidationError(
