@@ -133,8 +133,19 @@ export interface AnyContract extends Contract {
 
 export class Contract {
     private _connection: Connection;
+    public get connection(): Connection {
+        return this._connection;
+    }
+
     private _contractId: string;
-    private _schema: ABI;
+    public get contractId(): string {
+        return this._contractId;
+    }
+
+    private _abi: ABI;
+    public get abi(): ABI {
+        return this._abi;
+    }
 
     /**
      * @param connection Connection to NEAR network through RPC.
@@ -144,9 +155,9 @@ export class Contract {
     constructor(connection: Connection, contractId: string, abi: ABI) {
         this._connection = connection;
         this._contractId = contractId;
-        this._schema = abi;
+        this._abi = abi;
 
-        this._schema.abi.functions.forEach((fn) => {
+        this._abi.abi.functions.forEach((fn) => {
             const funcName = fn.name;
             const isView = fn.is_view;
             // Create method on this contract object to be able to call methods.
