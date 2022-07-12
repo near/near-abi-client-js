@@ -142,22 +142,50 @@ function serializeArgs(
                 `${fn_name} accepts no arguments, got ${args}`
             );
         }
-        // TODO support providing an object as a single parameter
-        else if (args.length != params_abi.length) {
-            throw new AbiValidationError(
-                `Invalid number of parameters for ${fn_name}, expected ${params_abi.length} got ${args.length}`
-            );
-        } else {
+
+        let param_object: object;
+        if (args.length === params_abi.length) {
             // Serializes the arguments as a JSON object by default.
             // The reason for this is that contracts by default support object deserialization
             // and only Rust contracts support the array JSON format ambiguously.
-            const obj = args.reduce((accumulator, value, idx) => {
+            param_object = args.reduce((accumulator, value, idx) => {
                 const key = params_abi[idx].name;
                 return { ...accumulator, [key]: value };
             }, {});
-            // TODO serialize based on protocol in abi
-            return serializeJSON(obj);
+        } else if (
+            args.length === 1 &&
+            typeof args[0] === 'object' &&
+            args[0] !== null
+        ) {
+            // Parameter for function call is an object, validate keys are correct
+            // and serialize.
+            param_object = args[0];
+            const keys = Object.keys(param_object);
+            if (keys.length !== params_abi.length) {
+                throw new AbiValidationError(
+                    `Invalid number of fields for ${fn_name}, expected ${params_abi.length} got ${keys.length}`
+                );
+            }
+
+            //* This doesn't validate the order of keys. If we wanted serialization to be
+            //* canonical, we would check it here or sort after this method.
+            for (const k of params_abi) {
+                if (!param_object[k.name]) {
+                    throw new AbiValidationError(
+                        `Function ${fn_name} expected key ${k.name} in parameter object`
+                    );
+                }
+            }
+        } else {
+            throw new AbiValidationError(
+                `Invalid number of parameters for ${fn_name}, expected ${params_abi.length} got ${args.length}`
+            );
         }
+
+    
+
+        // TODO serialize based on protocol in abi
+        return serializeJSON(param_object);
     } else {
         if (params_abi) {
             throw new AbiValidationError(
@@ -205,7 +233,7 @@ export class Contract {
                     const connection = this._connection;
                     const contractId = this._contractId;
                     // TODO support providing an object as a single parameter
-                    if (fn.params && args.length != fn.params.length) {
+                    if (fn.params && args.length !== fn.params.length) {
                         throw new AbiValidationError(
                             `Invalid parameter length for method ${fn.name}, expected ${fn.params.length}`
                         );
@@ -247,5 +275,5 @@ export class Contract {
 }
 
 export const testingExports = {
-    serializeArgs
+    serializeArgs,
 };
