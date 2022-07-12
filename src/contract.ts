@@ -148,9 +148,15 @@ function serializeArgs(
                 `Invalid number of parameters for ${fn_name}, expected ${params_abi.length} got ${args.length}`
             );
         } else {
-            // TODO serialize as an object
-            // TODO serialize based on protocol
-            return serializeJSON(args);
+            // Serializes the arguments as a JSON object by default.
+            // The reason for this is that contracts by default support object deserialization
+            // and only Rust contracts support the array JSON format ambiguously.
+            const obj = args.reduce((accumulator, value, idx) => {
+                const key = params_abi[idx].name;
+                return { ...accumulator, [key]: value };
+            }, {});
+            // TODO serialize based on protocol in abi
+            return serializeJSON(obj);
         }
     } else {
         if (params_abi) {
@@ -239,3 +245,7 @@ export class Contract {
         });
     }
 }
+
+export const testingExports = {
+    serializeArgs
+};
