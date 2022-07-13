@@ -11,19 +11,21 @@ export interface ABIData {
 }
 
 export interface ContractMetadata {
-    name: string;
-    version: string;
-    authors: string[];
+    name?: string;
+    version?: string;
+    authors?: string[];
 }
 
 export interface ABIFunction {
     name: string;
     is_view?: boolean;
     is_init?: boolean;
+    is_payable?: boolean;
+    is_private?: boolean;
     params?: ABIParameterInfo[];
     callbacks?: any[];
     callbacks_vec?: ABITypeInfo;
-    result: ABITypeInfo;
+    result?: ABITypeInfo;
 }
 
 export interface ABITypeInfo {
@@ -45,8 +47,3 @@ export interface ABIType {
     [k: string]: any;
 }
 
-export interface ABIItem {
-    type: string;
-    format: string;
-    minimum?: number;
-}

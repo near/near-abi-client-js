@@ -33,7 +33,7 @@ function serializeJSON(input: any): Buffer {
     return Buffer.from(JSON.stringify(input));
 }
 
-// Helper function so that
+// Helper function so that internally `near-api-js` doesn't re-serialize the input.
 function ignoreSerialization(input: Buffer): Buffer {
     return input;
 }
@@ -60,7 +60,7 @@ async function callInternal(
     args: Buffer,
     opts?: FunctionCallOptions
 ): Promise<FinalExecutionOutcome> {
-    validateBNLike({ opts: opts?.gas, amount: opts?.attachedDeposit });
+    validateBNLike({ gas: opts?.gas, amount: opts?.attachedDeposit });
 
     const rawResult = await account.functionCall({
         contractId,
@@ -95,11 +95,9 @@ async function viewInternal(
         finality: 'optimistic',
     });
 
-    if (result.logs) {
-        if (!process.env['NEAR_NO_LOGS']) {
-            for (const log of result.logs) {
-                console.log(`Log [${contractId}]: ${log}`);
-            }
+    if (result.logs && !process.env['NEAR_NO_LOGS']) {
+        for (const log of result.logs) {
+            console.log(`Log [${contractId}]: ${log}`);
         }
     }
 
@@ -181,8 +179,6 @@ function serializeArgs(
                 `Invalid number of parameters for ${fn_name}, expected ${params_abi.length} got ${args.length}`
             );
         }
-
-    
 
         // TODO serialize based on protocol in abi
         return serializeJSON(param_object);
