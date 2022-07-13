@@ -1,4 +1,4 @@
-import schema from "./test_schema.json";
+import { testSchema } from "./testSchema";
 import { Contract, AnyContract } from "../src/index";
 import { connect, keyStores } from "near-api-js";
 import { testingExports } from "../src/contract";
@@ -19,7 +19,7 @@ test("ABI deserialization", async () => {
     const contract = new Contract(
         near.connection,
         "test",
-        schema
+        testSchema
     ) as AnyContract;
 
     const function_call = contract.add([1, 2], [3, 4], 5);
@@ -29,7 +29,7 @@ test("ABI deserialization", async () => {
 
     const serializeTest = (...input: any[]) => {
         return testingExports
-            .serializeArgs("test", input, schema.abi.functions[0].params)
+            .serializeArgs("test", input, testSchema.abi.functions[0].params)
             .toString();
     };
     // Serialized data should be based on ABI schema

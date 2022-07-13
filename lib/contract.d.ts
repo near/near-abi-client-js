@@ -1,7 +1,8 @@
+/// <reference types="node" />
 import BN from 'bn.js';
 import { Account, Connection } from 'near-api-js';
 import { FinalExecutionOutcome } from 'near-api-js/lib/providers';
-import { ABI } from './abi';
+import { ABI, ABIParameterInfo } from './abi';
 export interface FunctionCallOptions {
     /** max amount of gas that method call can use */
     gas?: BN;
@@ -31,10 +32,14 @@ export interface CallableFunction {
 export interface AnyContract extends Contract {
     [x: string]: any;
 }
+declare function serializeArgs(fn_name: string, args: any[], params_abi?: ABIParameterInfo[]): Buffer;
 export declare class Contract {
-    readonly connection: Connection;
-    readonly contractId: string;
-    readonly abi: ABI;
+    private _connection;
+    get connection(): Connection;
+    private _contractId;
+    get contractId(): string;
+    private _abi;
+    get abi(): ABI;
     /**
      * @param connection Connection to NEAR network through RPC.
      * @param contractId NEAR account id where the contract is deployed.
@@ -42,3 +47,7 @@ export declare class Contract {
      */
     constructor(connection: Connection, contractId: string, abi: ABI);
 }
+export declare const testingExports: {
+    serializeArgs: typeof serializeArgs;
+};
+export {};

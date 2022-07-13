@@ -1,3 +1,5 @@
+import { JSONSchema7 } from 'json-schema';
+
 export interface ABI {
     abi_schema_version: string;
     metadata?: ContractMetadata;
@@ -7,7 +9,7 @@ export interface ABI {
 export interface ABIData {
     functions: ABIFunction[];
     /** Root JSON schema for the ABI */
-    root_schema: any;
+    root_schema: JSONSchema7;
 }
 
 export interface ContractMetadata {
@@ -29,21 +31,10 @@ export interface ABIFunction {
 }
 
 export interface ABITypeInfo {
-    type_schema: Reference | ABIType;
+    type_schema: JSONSchema7;
     serialization_type: string;
 }
 
 export interface ABIParameterInfo extends ABITypeInfo {
     name: string;
 }
-
-export interface Reference {
-    $ref: string;
-}
-
-export interface ABIType {
-    type: string;
-    // TODO make this constrained. Likely need to handle all data types
-    [k: string]: any;
-}
-

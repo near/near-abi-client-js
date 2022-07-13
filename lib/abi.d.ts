@@ -1,3 +1,4 @@
+import { JSONSchema7 } from 'json-schema';
 export interface ABI {
     abi_schema_version: string;
     metadata?: ContractMetadata;
@@ -6,38 +7,28 @@ export interface ABI {
 export interface ABIData {
     functions: ABIFunction[];
     /** Root JSON schema for the ABI */
-    root_schema: any;
+    root_schema: JSONSchema7;
 }
 export interface ContractMetadata {
-    name: string;
-    version: string;
-    authors: string[];
+    name?: string;
+    version?: string;
+    authors?: string[];
 }
 export interface ABIFunction {
     name: string;
     is_view?: boolean;
     is_init?: boolean;
+    is_payable?: boolean;
+    is_private?: boolean;
     params?: ABIParameterInfo[];
     callbacks?: any[];
     callbacks_vec?: ABITypeInfo;
-    result: ABITypeInfo;
+    result?: ABITypeInfo;
 }
 export interface ABITypeInfo {
-    type_schema: Reference | ABIType;
+    type_schema: JSONSchema7;
     serialization_type: string;
 }
 export interface ABIParameterInfo extends ABITypeInfo {
     name: string;
-}
-export interface Reference {
-    $ref: string;
-}
-export interface ABIType {
-    type: string;
-    [k: string]: any;
-}
-export interface ABIItem {
-    type: string;
-    format: string;
-    minimum?: number;
 }

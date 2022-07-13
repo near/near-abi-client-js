@@ -1,4 +1,8 @@
-{
+import { ABI } from "../src";
+
+// TODO for some reason the TS json module resolver fails to match exact patterns for types
+// TODO which in this case fails for "type" field.
+export const testSchema: ABI = {
 	"abi_schema_version": "0.1.0",
 	"metadata": {
 	  "name": "abi",
@@ -118,4 +122,4 @@
 		}
 	  }
 	}
-  }
+  };
