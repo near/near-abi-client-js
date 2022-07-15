@@ -59,8 +59,21 @@ test("ABI deserialization", async () => {
 
     // No parameters
     expect(() => serializeTest()).toThrow(
-        "Invalid number of parameters for test, expected 3 got 0"
+        "Passed no parameters for test, expected 3"
     );
+
+    // ABI method with no params test
+    expect(
+        testingExports
+            .serializeArgs("no_params", [], testSchema.abi.functions[2].params)
+            .toString()
+    ).toStrictEqual("");
+
+    expect(() =>
+        testingExports
+            .serializeArgs("no_params", ["something"], testSchema.abi.functions[2].params)
+            .toString()
+    ).toThrow("no_params accepts no arguments, got something");
 
     // it's a view contract, no change.
     // let result = await contract.add([1, 2]).callFrom(account);

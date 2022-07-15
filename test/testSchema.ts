@@ -80,7 +80,22 @@ export const testSchema: ABI = {
 			},
 			"serialization_type": "json"
 		  }
-		}
+		},
+		{
+			"name": "no_params",
+			"is_view": true,
+			"result": {
+			  "type_schema": {
+				"type": "object",
+				"additionalProperties": {
+				  "type": "integer",
+				  "format": "uint64",
+				  "minimum": 0.0
+				}
+			  },
+			  "serialization_type": "json"
+			}
+		  }
 	  ],
 	  "root_schema": {
 		"$schema": "http://json-schema.org/draft-07/schema#",
