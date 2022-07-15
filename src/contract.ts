@@ -134,7 +134,7 @@ function serializeArgs(
     args: any[],
     params_abi?: ABIParameterInfo[]
 ): Buffer {
-    if (args) {
+    if (args.length > 0) {
         if (!params_abi) {
             throw new AbiValidationError(
                 `${fn_name} accepts no arguments, got ${args}`
