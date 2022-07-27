@@ -228,12 +228,6 @@ export class Contract {
                 value: (...args: any[]) => {
                     const connection = this._connection;
                     const contractId = this._contractId;
-                    // TODO support providing an object as a single parameter
-                    if (fn.params && args.length !== fn.params.length) {
-                        throw new AbiValidationError(
-                            `Invalid parameter length for method ${fn.name}, expected ${fn.params.length}`
-                        );
-                    }
                     const func: CallableFunction = {
                         // Include a call function if the function is not view only.
                         callFrom: isView
