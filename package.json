@@ -1,5 +1,5 @@
 {
-  "name": "near-abi-client",
+  "name": "near-abi-client-js",
   "version": "0.1.0",
   "description": "Typescript client to interact with contracts defined with an ABI",
   "main": "lib/index.js",
@@ -32,9 +32,9 @@
     "ts-jest": "^28.0.3",
     "ts-jest-resolver": "^2.0.0",
     "ts-morph": "^11.0.3",
-    "typedoc": "^0.20.36",
+    "typedoc": "^0.23.11",
     "typedoc-neo-theme": "^1.1.1",
-    "typescript": "^4.3.0",
+    "typescript": "^4.8.2",
     "uglifyify": "^5.0.1"
   },
   "scripts": {
