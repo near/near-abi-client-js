@@ -3,12 +3,13 @@ import { Connection } from 'near-api-js';
 import { FinalExecutionOutcome } from 'near-api-js/lib/providers';
 import { AbiRoot, AbiParameter } from './abi';
 import { Wallet } from '@near-wallet-selector/core';
+import BN from 'bn.js';
 export interface FunctionCallOptions {
     signer?: string;
     /** max amount of gas that method call can use */
-    gas?: string;
+    gas?: BN;
     /** amount of NEAR (in yoctoNEAR) to send together with the call */
-    attachedDeposit?: string;
+    attachedDeposit?: BN;
     /**
      * Metadata to send the NEAR Wallet if using it to sign transactions.
      * @see {@link RequestSignTransactionsOptions}
