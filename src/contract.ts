@@ -6,7 +6,7 @@ import {
     getTransactionLastResult,
 } from 'near-api-js/lib/providers/provider';
 import { ArgumentTypeError } from 'near-api-js/lib/utils/errors';
-import { ABI, ABIParameterInfo } from './abi';
+import { AbiRoot, AbiParameter } from './abi';
 
 export interface FunctionCallOptions {
     /** max amount of gas that method call can use */
@@ -132,7 +132,7 @@ export interface AnyContract extends Contract {
 function serializeArgs(
     fn_name: string,
     args: any[],
-    params_abi?: ABIParameterInfo[]
+    params_abi?: AbiParameter[]
 ): Buffer {
     if (args.length > 0) {
         if (!params_abi) {
@@ -203,8 +203,8 @@ export class Contract {
         return this._contractId;
     }
 
-    private _abi: ABI;
-    public get abi(): ABI {
+    private _abi: AbiRoot;
+    public get abi(): AbiRoot {
         return this._abi;
     }
 
@@ -213,12 +213,12 @@ export class Contract {
      * @param contractId NEAR account id where the contract is deployed.
      * @param abi ABI schema which will be used to generate methods to be called on this Contract
      */
-    constructor(connection: Connection, contractId: string, abi: ABI) {
+    constructor(connection: Connection, contractId: string, abi: AbiRoot) {
         this._connection = connection;
         this._contractId = contractId;
         this._abi = abi;
 
-        this._abi.abi.functions.forEach((fn) => {
+        this._abi.body.functions.forEach((fn) => {
             const funcName = fn.name;
             const isView = fn.is_view;
             // Create method on this contract object to be able to call methods.

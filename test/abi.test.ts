@@ -29,7 +29,7 @@ test("ABI deserialization", async () => {
 
     const serializeTest = (...input: any[]) => {
         return testingExports
-            .serializeArgs("test", input, testSchema.abi.functions[0].params)
+            .serializeArgs("test", input, testSchema.body.functions[0].params)
             .toString();
     };
     // Serialized data should be based on ABI schema
@@ -65,13 +65,13 @@ test("ABI deserialization", async () => {
     // ABI method with no params test
     expect(
         testingExports
-            .serializeArgs("no_params", [], testSchema.abi.functions[2].params)
+            .serializeArgs("no_params", [], testSchema.body.functions[2].params)
             .toString()
     ).toStrictEqual("");
 
     expect(() =>
         testingExports
-            .serializeArgs("no_params", ["something"], testSchema.abi.functions[2].params)
+            .serializeArgs("no_params", ["something"], testSchema.body.functions[2].params)
             .toString()
     ).toThrow("no_params accepts no arguments, got something");
 
