@@ -15,6 +15,7 @@ test("ABI deserialization", async () => {
         },
     };
     const near = await connect(config);
+
     // const account = new Account(near.connection, 'test.testnet');
     const contract = new Contract(
         near.connection,
