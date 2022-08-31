@@ -1,23 +1,16 @@
-import BN from 'bn.js';
-import { Account, Connection } from 'near-api-js';
+import { Connection } from 'near-api-js';
 import { FinalExecutionOutcome } from 'near-api-js/lib/providers';
-import {
-    CodeResult,
-    getTransactionLastResult,
-} from 'near-api-js/lib/providers/provider';
-import { ArgumentTypeError } from 'near-api-js/lib/utils/errors';
+import { CodeResult } from 'near-api-js/lib/providers/provider';
 import { AbiRoot, AbiParameter } from './abi';
+import { Wallet } from '@near-wallet-selector/core';
+import BN from 'bn.js';
 
 export interface FunctionCallOptions {
+    signer?: string;
     /** max amount of gas that method call can use */
     gas?: BN;
     /** amount of NEAR (in yoctoNEAR) to send together with the call */
     attachedDeposit?: BN;
-    /**
-     * Metadata to send the NEAR Wallet if using it to sign transactions.
-     * @see {@link RequestSignTransactionsOptions}
-     */
-    walletMeta?: string;
     /**
      * Callback url to send the NEAR Wallet if using it to sign transactions.
      * @see {@link RequestSignTransactionsOptions}
@@ -33,48 +26,29 @@ function serializeJSON(input: any): Buffer {
     return Buffer.from(JSON.stringify(input));
 }
 
-// Helper function so that internally `near-api-js` doesn't re-serialize the input.
-function ignoreSerialization(input: Buffer): Buffer {
-    return input;
-}
-
-/**
- * Validation on arguments being a big number from bn.js
- * Throws if an argument is not in BN format or otherwise invalid
- * @param argMap
- */
-function validateBNLike(argMap: { [name: string]: any }) {
-    const bnLike = 'number, decimal string or BN';
-    for (const argName of Object.keys(argMap)) {
-        const argValue = argMap[argName];
-        if (argValue && !BN.isBN(argValue) && isNaN(argValue)) {
-            throw new ArgumentTypeError(argName, bnLike, argValue);
-        }
-    }
-}
-
 async function callInternal(
-    account: Account,
+    account: Wallet,
     contractId: string,
     methodName: string,
-    args: Buffer,
+    args: Uint8Array,
     opts?: FunctionCallOptions
-): Promise<FinalExecutionOutcome> {
-    validateBNLike({ gas: opts?.gas, amount: opts?.attachedDeposit });
-
-    const rawResult = await account.functionCall({
-        contractId,
-        methodName,
-        args,
-        gas: opts?.gas,
-        attachedDeposit: opts?.attachedDeposit,
-        walletMeta: opts?.walletMeta,
-        walletCallbackUrl: opts?.walletCallbackUrl,
-        // Ignore because we have already serialized args
-        stringify: ignoreSerialization,
+): Promise<void | FinalExecutionOutcome> {
+    return await account.signAndSendTransaction({
+        signerId: opts?.signer,
+        receiverId: contractId,
+        callbackUrl: opts?.walletCallbackUrl,
+        actions: [
+            {
+                type: 'FunctionCall',
+                params: {
+                    methodName,
+                    args,
+                    gas: opts?.gas.toString(),
+                    deposit: opts?.attachedDeposit.toString(),
+                },
+            },
+        ],
     });
-
-    return getTransactionLastResult(rawResult);
 }
 
 async function viewInternal(
@@ -114,9 +88,9 @@ export class AbiValidationError extends Error {
 
 export interface CallableFunction {
     callFrom?(
-        account: Account,
+        wallet: Wallet,
         opts?: FunctionCallOptions
-    ): Promise<FinalExecutionOutcome>;
+    ): Promise<void | FinalExecutionOutcome>;
     view(): Promise<any>;
 }
 
@@ -235,7 +209,7 @@ export class Contract {
                             : async function (
                                 account,
                                 opts
-                            ): Promise<FinalExecutionOutcome> {
+                            ): Promise<void | FinalExecutionOutcome> {
                                 // Using inner NAJ APIs for result for consistency, but this might
                                 // not be ideal API.
                                 return callInternal(

@@ -62,14 +62,14 @@ export interface AbiType {
 
 /** ABI type which values are serialized using JSON format. */
 export interface AbiJsonType extends AbiType {
-    serialization_type: "json";
+    serialization_type: 'json';
     /** JSON Subschema that represents this type (can be an inline primitive, a reference to the root schema and a few other corner-case things). */
     type_schema: JSONSchema7;
 }
 
 /** ABI type which values are serialized using Borsh format. */
 export interface AbiBorshType extends AbiType {
-    serialization_type: "borsh";
+    serialization_type: 'borsh';
     // TODO: Add a TS model for Borsh schema to borsh-js
     /** Borsh schema that represents this type. */
     type_schema: any;
