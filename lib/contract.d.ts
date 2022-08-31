@@ -11,11 +11,6 @@ export interface FunctionCallOptions {
     /** amount of NEAR (in yoctoNEAR) to send together with the call */
     attachedDeposit?: BN;
     /**
-     * Metadata to send the NEAR Wallet if using it to sign transactions.
-     * @see {@link RequestSignTransactionsOptions}
-     */
-    walletMeta?: string;
-    /**
      * Callback url to send the NEAR Wallet if using it to sign transactions.
      * @see {@link RequestSignTransactionsOptions}
      */

@@ -12,11 +12,6 @@ export interface FunctionCallOptions {
     /** amount of NEAR (in yoctoNEAR) to send together with the call */
     attachedDeposit?: BN;
     /**
-     * Metadata to send the NEAR Wallet if using it to sign transactions.
-     * @see {@link RequestSignTransactionsOptions}
-     */
-    walletMeta?: string;
-    /**
      * Callback url to send the NEAR Wallet if using it to sign transactions.
      * @see {@link RequestSignTransactionsOptions}
      */
@@ -41,6 +36,7 @@ async function callInternal(
     return await account.signAndSendTransaction({
         signerId: opts?.signer,
         receiverId: contractId,
+        callbackUrl: opts?.walletCallbackUrl,
         actions: [
             {
                 type: 'FunctionCall',
