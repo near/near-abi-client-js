@@ -209,7 +209,7 @@ export class ContractMethod {
             };
             Object.defineProperty(this.view, 'name', {
                 writable: false,
-                value: `ContractMethod[${fn.name}].callFrom`,
+                value: `ContractMethod[${fn.name}].call`,
             });
         }
     }

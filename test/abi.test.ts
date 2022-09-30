@@ -77,7 +77,7 @@ test("ABI deserialization", async () => {
     ).toThrow("no_params accepts no arguments, got something");
 
     // it's a view contract, no change.
-    // let result = await contract.add([1, 2]).callFrom(account);
+    // let result = await contract.add([1, 2]).call(account);
     // console.log(result);
     // const result = await contract.add([1, 2]).view();
     // console.log(result);
