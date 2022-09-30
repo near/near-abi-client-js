@@ -163,7 +163,7 @@ export class ContractMethod {
         return this.#method;
     }
 
-    callFrom?(
+    call?(
         wallet: Wallet,
         opts?: FunctionCallOptions
     ): Promise<void | FinalExecutionOutcome>;
@@ -193,7 +193,7 @@ export class ContractMethod {
                 value: `ContractMethod[${fn.name}].view`,
             });
         } else {
-            this.callFrom = async (
+            this.call = async (
                 account,
                 opts
             ): Promise<void | FinalExecutionOutcome> => {
