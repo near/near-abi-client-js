@@ -1,7 +1,7 @@
 import { Connection } from 'near-api-js';
 import { FinalExecutionOutcome } from 'near-api-js/lib/providers';
 import { CodeResult } from 'near-api-js/lib/providers/provider';
-import { AbiRoot, AbiParameter } from './abi';
+import { AbiRoot, AbiParameter, AbiFunction } from './abi';
 import { Wallet } from '@near-wallet-selector/core';
 import BN from 'bn.js';
 
@@ -16,14 +16,6 @@ export interface FunctionCallOptions {
      * @see {@link RequestSignTransactionsOptions}
      */
     walletCallbackUrl?: string;
-}
-
-function deserializeJSON(response: Uint8Array): any {
-    return JSON.parse(Buffer.from(response).toString());
-}
-
-function serializeJSON(input: any): Buffer {
-    return Buffer.from(JSON.stringify(input));
 }
 
 async function callInternal(
@@ -86,21 +78,12 @@ export class AbiValidationError extends Error {
     }
 }
 
-export interface CallableFunction {
-    callFrom?(
-        wallet: Wallet,
-        opts?: FunctionCallOptions
-    ): Promise<void | FinalExecutionOutcome>;
-    view(): Promise<any>;
+function deserializeJSON(response: Uint8Array): any {
+    return JSON.parse(Buffer.from(response).toString());
 }
 
-/**
- * Convenience type for a contract that does not use an ABI.
- */
-export interface AnyContract extends Contract {
-    // Allow any other types on the contract that are not defined.
-    // This is ideally not needed when TS generated from ABI.
-    [x: string]: any;
+function serializeJSON(input: any): Buffer {
+    return Buffer.from(JSON.stringify(input));
 }
 
 function serializeArgs(
@@ -166,21 +149,116 @@ function serializeArgs(
     }
 }
 
+export class ContractMethod {
+    #contract: Contract;
+    public get contract(): Contract {
+        return this.#contract;
+    }
+    #arguments: any[];
+    public get arguments(): any[] {
+        return this.#arguments;
+    }
+    #method: AbiFunction;
+    public get method(): AbiFunction {
+        return this.#method;
+    }
+
+    callFrom?(
+        wallet: Wallet,
+        opts?: FunctionCallOptions
+    ): Promise<void | FinalExecutionOutcome>;
+
+    view?(): Promise<any>;
+
+    /**
+     * @param contract NEAR Contract object
+     * @param fn ABI function object
+     * @param args Arguments to pass to the function
+     */
+    constructor(contract: Contract, fn: AbiFunction, args: any[]) {
+        [this.#method, this.#arguments, this.#contract] = [fn, args, contract];
+        if (fn.is_view) {
+            this.view = async (): Promise<any> => {
+                const returnBytes = await viewInternal(
+                    contract.connection,
+                    contract.contractId,
+                    fn.name,
+                    serializeArgs(fn.name, args, fn.params)
+                );
+                // TODO deserialize based on protocol from schema
+                return deserializeJSON(returnBytes);
+            };
+            Object.defineProperty(this.view, 'name', {
+                writable: false,
+                value: `ContractMethod[${fn.name}].view`,
+            });
+        } else {
+            this.callFrom = async (
+                account,
+                opts
+            ): Promise<void | FinalExecutionOutcome> => {
+                // Using inner NAJ APIs for result for consistency, but this might
+                // not be ideal API.
+                return callInternal(
+                    account,
+                    contract.contractId,
+                    fn.name,
+                    serializeArgs(fn.name, args, fn.params),
+                    opts
+                );
+            };
+            Object.defineProperty(this.view, 'name', {
+                writable: false,
+                value: `ContractMethod[${fn.name}].callFrom`,
+            });
+        }
+    }
+}
+
+export class ContractMethods {
+    readonly [fn: string]: (...args: any[]) => ContractMethod;
+
+    /**
+     * @param contract NEAR Contract object
+     */
+    constructor(contract: Contract) {
+        if (!contract.abi)
+            throw new Error("Can't create ContractMethods without ABI");
+        // Create method on this contract object to be able to call methods.
+        for (const fn of contract.abi.body.functions) {
+            const handler = (...args): ContractMethod => {
+                return new ContractMethod(contract, fn, args);
+            };
+            Object.defineProperty(handler, 'name', {
+                writable: false,
+                value: `ContractMethod[${fn.name}]`,
+            });
+            Object.defineProperty(this, fn.name, {
+                writable: false,
+                enumerable: true,
+                value: handler,
+            });
+        }
+    }
+}
+
 export class Contract {
-    private _connection: Connection;
+    #connection: Connection;
     public get connection(): Connection {
-        return this._connection;
+        return this.#connection;
     }
 
-    private _contractId: string;
+    #contractId: string;
     public get contractId(): string {
-        return this._contractId;
+        return this.#contractId;
     }
 
-    private _abi: AbiRoot;
+    #abi: AbiRoot;
     public get abi(): AbiRoot {
-        return this._abi;
+        return this.#abi;
     }
+
+    readonly methods: ContractMethods;
 
     /**
      * @param connection Connection to NEAR network through RPC.
@@ -188,52 +266,14 @@ export class Contract {
      * @param abi ABI schema which will be used to generate methods to be called on this Contract
      */
     constructor(connection: Connection, contractId: string, abi: AbiRoot) {
-        this._connection = connection;
-        this._contractId = contractId;
-        this._abi = abi;
+        this.#connection = connection;
+        this.#contractId = contractId;
+        this.#abi = abi;
 
-        this._abi.body.functions.forEach((fn) => {
-            const funcName = fn.name;
-            const isView = fn.is_view;
-            // Create method on this contract object to be able to call methods.
-            Object.defineProperty(this, funcName, {
-                writable: false,
-                enumerable: true,
-                value: (...args: any[]) => {
-                    const connection = this._connection;
-                    const contractId = this._contractId;
-                    const func: CallableFunction = {
-                        // Include a call function if the function is not view only.
-                        callFrom: isView
-                            ? undefined
-                            : async function (
-                                account,
-                                opts
-                            ): Promise<void | FinalExecutionOutcome> {
-                                // Using inner NAJ APIs for result for consistency, but this might
-                                // not be ideal API.
-                                return callInternal(
-                                    account,
-                                    contractId,
-                                    funcName,
-                                    serializeArgs(funcName, args, fn.params),
-                                    opts
-                                );
-                            },
-                        view: async function (): Promise<any> {
-                            const returnBytes = await viewInternal(
-                                connection,
-                                contractId,
-                                funcName,
-                                serializeArgs(funcName, args, fn.params)
-                            );
-                            // TODO deserialize based on protocol from schema
-                            return deserializeJSON(returnBytes);
-                        },
-                    };
-                    return func;
-                },
-            });
+        Object.defineProperty(this, 'methods', {
+            writable: false,
+            enumerable: true,
+            value: new ContractMethods(this),
         });
     }
 }

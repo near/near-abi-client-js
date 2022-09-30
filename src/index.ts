@@ -1,7 +1,8 @@
 /** @ignore @module */
 export {
-    AnyContract,
     Contract,
+    ContractMethod,
+    ContractMethods,
     FunctionCallOptions,
     AbiValidationError,
 } from './contract';
