@@ -207,7 +207,7 @@ export class ContractMethod {
                     opts
                 );
             };
-            Object.defineProperty(this.view, 'name', {
+            Object.defineProperty(this.call, 'name', {
                 writable: false,
                 value: `ContractMethod[${fn.name}].call`,
             });
