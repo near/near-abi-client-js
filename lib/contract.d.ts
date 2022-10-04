@@ -25,7 +25,7 @@ export declare class ContractMethodInvocation {
     get contract(): Contract;
     get arguments(): any[];
     get method(): AbiFunction;
-    call?(wallet: Wallet, opts?: FunctionCallOptions): Promise<void | FinalExecutionOutcome>;
+    transact?(wallet: Wallet, opts?: FunctionCallOptions): Promise<void | FinalExecutionOutcome>;
     view?(): Promise<any>;
     /**
      * @param contract NEAR Contract object
