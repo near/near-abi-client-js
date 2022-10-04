@@ -1,5 +1,5 @@
+import { Contract } from "../src/index";
 import { testSchema } from "./testSchema";
-import { Contract, AnyContract } from "../src/index";
 import { connect, keyStores } from "near-api-js";
 import { testingExports } from "../src/contract";
 
@@ -21,12 +21,12 @@ test("ABI deserialization", async () => {
         near.connection,
         "test",
         testSchema
-    ) as AnyContract;
+    );
 
-    const function_call = contract.add([1, 2], [3, 4], 5);
+    const function_call = contract.methods.add([1, 2], [3, 4], 5);
     expect(function_call.view).toBeDefined();
     // function should be view only
-    expect(function_call.callFrom).toBeUndefined();
+    expect(function_call.call).toBeUndefined();
 
     const serializeTest = (...input: any[]) => {
         return testingExports
@@ -77,7 +77,7 @@ test("ABI deserialization", async () => {
     ).toThrow("no_params accepts no arguments, got something");
 
     // it's a view contract, no change.
-    // let result = await contract.add([1, 2]).callFrom(account);
+    // let result = await contract.add([1, 2]).call(account);
     // console.log(result);
     // const result = await contract.add([1, 2]).view();
     // console.log(result);

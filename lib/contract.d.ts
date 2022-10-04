@@ -1,7 +1,7 @@
 /// <reference types="node" />
 import { Connection } from 'near-api-js';
 import { FinalExecutionOutcome } from 'near-api-js/lib/providers';
-import { AbiRoot, AbiParameter } from './abi';
+import { AbiRoot, AbiParameter, AbiFunction } from './abi';
 import { Wallet } from '@near-wallet-selector/core';
 import BN from 'bn.js';
 export interface FunctionCallOptions {
@@ -19,24 +19,34 @@ export interface FunctionCallOptions {
 export declare class AbiValidationError extends Error {
     constructor(error: string);
 }
-export interface CallableFunction {
-    callFrom?(wallet: Wallet, opts?: FunctionCallOptions): Promise<void | FinalExecutionOutcome>;
-    view(): Promise<any>;
-}
-/**
- * Convenience type for a contract that does not use an ABI.
- */
-export interface AnyContract extends Contract {
-    [x: string]: any;
-}
 declare function serializeArgs(fn_name: string, args: any[], params_abi?: AbiParameter[]): Buffer;
+export declare class ContractMethodInvocation {
+    #private;
+    get contract(): Contract;
+    get arguments(): any[];
+    get method(): AbiFunction;
+    call?(wallet: Wallet, opts?: FunctionCallOptions): Promise<void | FinalExecutionOutcome>;
+    view?(): Promise<any>;
+    /**
+     * @param contract NEAR Contract object
+     * @param fn ABI function object
+     * @param args Arguments to pass to the function
+     */
+    constructor(contract: Contract, fn: AbiFunction, args: any[]);
+}
+export declare class ContractMethods {
+    readonly [fn: string]: (...args: any[]) => ContractMethodInvocation;
+    /**
+     * @param contract NEAR Contract object
+     */
+    constructor(contract: Contract);
+}
 export declare class Contract {
-    private _connection;
+    #private;
     get connection(): Connection;
-    private _contractId;
     get contractId(): string;
-    private _abi;
     get abi(): AbiRoot;
+    readonly methods: ContractMethods;
     /**
      * @param connection Connection to NEAR network through RPC.
      * @param contractId NEAR account id where the contract is deployed.
