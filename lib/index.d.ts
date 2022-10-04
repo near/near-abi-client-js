@@ -1,3 +1,3 @@
 /** @ignore @module */
-export { Contract, ContractMethod, ContractMethods, FunctionCallOptions, AbiValidationError, } from './contract';
+export { Contract, ContractMethodInvocation, ContractMethods, FunctionCallOptions, AbiValidationError, } from './contract';
 export * from './abi';

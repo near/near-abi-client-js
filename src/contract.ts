@@ -149,7 +149,7 @@ function serializeArgs(
     }
 }
 
-export class ContractMethod {
+export class ContractMethodInvocation {
     #contract: Contract;
     public get contract(): Contract {
         return this.#contract;
@@ -216,7 +216,7 @@ export class ContractMethod {
 }
 
 export class ContractMethods {
-    readonly [fn: string]: (...args: any[]) => ContractMethod;
+    readonly [fn: string]: (...args: any[]) => ContractMethodInvocation;
 
     /**
      * @param contract NEAR Contract object
@@ -226,8 +226,8 @@ export class ContractMethods {
             throw new Error("Can't create ContractMethods without ABI");
         // Create method on this contract object to be able to call methods.
         for (const fn of contract.abi.body.functions) {
-            const handler = (...args): ContractMethod => {
-                return new ContractMethod(contract, fn, args);
+            const handler = (...args): ContractMethodInvocation => {
+                return new ContractMethodInvocation(contract, fn, args);
             };
             Object.defineProperty(handler, 'name', {
                 writable: false,

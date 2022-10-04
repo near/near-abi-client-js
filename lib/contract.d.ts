@@ -20,7 +20,7 @@ export declare class AbiValidationError extends Error {
     constructor(error: string);
 }
 declare function serializeArgs(fn_name: string, args: any[], params_abi?: AbiParameter[]): Buffer;
-export declare class ContractMethod {
+export declare class ContractMethodInvocation {
     #private;
     get contract(): Contract;
     get arguments(): any[];
@@ -35,7 +35,7 @@ export declare class ContractMethod {
     constructor(contract: Contract, fn: AbiFunction, args: any[]);
 }
 export declare class ContractMethods {
-    readonly [fn: string]: (...args: any[]) => ContractMethod;
+    readonly [fn: string]: (...args: any[]) => ContractMethodInvocation;
     /**
      * @param contract NEAR Contract object
      */

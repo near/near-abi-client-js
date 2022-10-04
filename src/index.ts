@@ -1,7 +1,7 @@
 /** @ignore @module */
 export {
     Contract,
-    ContractMethod,
+    ContractMethodInvocation,
     ContractMethods,
     FunctionCallOptions,
     AbiValidationError,
