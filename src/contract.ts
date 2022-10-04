@@ -18,7 +18,7 @@ export interface FunctionCallOptions {
     walletCallbackUrl?: string;
 }
 
-async function callInternal(
+async function transactInternal(
     account: Wallet,
     contractId: string,
     methodName: string,
@@ -163,7 +163,7 @@ export class ContractMethodInvocation {
         return this.#method;
     }
 
-    call?(
+    transact?(
         wallet: Wallet,
         opts?: FunctionCallOptions
     ): Promise<void | FinalExecutionOutcome>;
@@ -193,13 +193,13 @@ export class ContractMethodInvocation {
                 value: `ContractMethod[${fn.name}].view`,
             });
         } else {
-            this.call = async (
+            this.transact = async (
                 account,
                 opts
             ): Promise<void | FinalExecutionOutcome> => {
                 // Using inner NAJ APIs for result for consistency, but this might
                 // not be ideal API.
-                return callInternal(
+                return transactInternal(
                     account,
                     contract.contractId,
                     fn.name,
@@ -207,9 +207,9 @@ export class ContractMethodInvocation {
                     opts
                 );
             };
-            Object.defineProperty(this.call, 'name', {
+            Object.defineProperty(this.transact, 'name', {
                 writable: false,
-                value: `ContractMethod[${fn.name}].call`,
+                value: `ContractMethod[${fn.name}].transact`,
             });
         }
     }
