@@ -26,7 +26,7 @@ test("ABI deserialization", async () => {
     const function_call = contract.methods.add([1, 2], [3, 4], 5);
     expect(function_call.view).toBeDefined();
     // function should be view only
-    expect(function_call.call).toBeUndefined();
+    expect(function_call.transact).toBeUndefined();
 
     const serializeTest = (...input: any[]) => {
         return testingExports

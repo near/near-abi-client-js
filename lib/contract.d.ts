@@ -1,7 +1,7 @@
 /// <reference types="node" />
 import { Connection } from 'near-api-js';
 import { FinalExecutionOutcome } from 'near-api-js/lib/providers';
-import { AbiRoot, AbiParameter, AbiFunction } from './abi';
+import { AbiRoot, AbiParameters, AbiFunction } from 'near-abi';
 import { Wallet } from '@near-wallet-selector/core';
 import BN from 'bn.js';
 export interface FunctionCallOptions {
@@ -19,7 +19,7 @@ export interface FunctionCallOptions {
 export declare class AbiValidationError extends Error {
     constructor(error: string);
 }
-declare function serializeArgs(fn_name: string, args: any[], params_abi?: AbiParameter[]): Buffer;
+declare function serializeArgs(fn_name: string, args: any[], params_abi?: AbiParameters): Buffer;
 export declare class ContractMethodInvocation {
     #private;
     get contract(): Contract;

@@ -6,4 +6,4 @@ export {
     FunctionCallOptions,
     AbiValidationError,
 } from './contract';
-export * from './abi';
+export * from 'near-abi';
