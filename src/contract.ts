@@ -1,7 +1,7 @@
 import { Connection } from 'near-api-js';
 import { FinalExecutionOutcome } from 'near-api-js/lib/providers';
 import { CodeResult } from 'near-api-js/lib/providers/provider';
-import { AbiRoot, AbiParameter, AbiFunction } from './abi';
+import { AbiRoot, AbiParameters, AbiFunction, AbiFunctionKind } from 'near-abi';
 import { Wallet } from '@near-wallet-selector/core';
 import BN from 'bn.js';
 
@@ -89,7 +89,7 @@ function serializeJSON(input: any): Buffer {
 function serializeArgs(
     fn_name: string,
     args: any[],
-    params_abi?: AbiParameter[]
+    params_abi?: AbiParameters
 ): Buffer {
     if (args.length > 0) {
         if (!params_abi) {
@@ -99,12 +99,12 @@ function serializeArgs(
         }
 
         let param_object: object;
-        if (args.length === params_abi.length) {
+        if (args.length === params_abi.args.length) {
             // Serializes the arguments as a JSON object by default.
             // The reason for this is that contracts by default support object deserialization
             // and only Rust contracts support the array JSON format ambiguously.
             param_object = args.reduce((accumulator, value, idx) => {
-                const key = params_abi[idx].name;
+                const key = params_abi.args[idx].name;
                 return { ...accumulator, [key]: value };
             }, {});
         } else if (
@@ -116,15 +116,15 @@ function serializeArgs(
             // and serialize.
             param_object = args[0];
             const keys = Object.keys(param_object);
-            if (keys.length !== params_abi.length) {
+            if (keys.length !== params_abi.args.length) {
                 throw new AbiValidationError(
-                    `Invalid number of fields for ${fn_name}, expected ${params_abi.length} got ${keys.length}`
+                    `Invalid number of fields for ${fn_name}, expected ${params_abi.args.length} got ${keys.length}`
                 );
             }
 
             //* This doesn't validate the order of keys. If we wanted serialization to be
             //* canonical, we would check it here or sort after this method.
-            for (const k of params_abi) {
+            for (const k of params_abi.args) {
                 if (!param_object[k.name]) {
                     throw new AbiValidationError(
                         `Function ${fn_name} expected key ${k.name} in parameter object`
@@ -133,7 +133,7 @@ function serializeArgs(
             }
         } else {
             throw new AbiValidationError(
-                `Invalid number of parameters for ${fn_name}, expected ${params_abi.length} got ${args.length}`
+                `Invalid number of parameters for ${fn_name}, expected ${params_abi.args.length} got ${args.length}`
             );
         }
 
@@ -142,7 +142,7 @@ function serializeArgs(
     } else {
         if (params_abi) {
             throw new AbiValidationError(
-                `Passed no parameters for ${fn_name}, expected ${params_abi.length}`
+                `Passed no parameters for ${fn_name}, expected ${params_abi.args.length}`
             );
         }
         return Buffer.alloc(0);
@@ -177,7 +177,7 @@ export class ContractMethodInvocation {
      */
     constructor(contract: Contract, fn: AbiFunction, args: any[]) {
         [this.#method, this.#arguments, this.#contract] = [fn, args, contract];
-        if (fn.is_view) {
+        if (fn.kind == AbiFunctionKind.View) {
             this.view = async (): Promise<any> => {
                 const returnBytes = await viewInternal(
                     contract.connection,
