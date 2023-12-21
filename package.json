@@ -10,7 +10,7 @@
   "dependencies": {
     "@near-wallet-selector/core": "^6.0.1",
     "@types/json-schema": "^7.0.11",
-    "near-abi": "https://github.com/near/near-abi-js",
+    "near-abi": "0.1.1",
     "near-api-js": "^0.44.2"
   },
   "devDependencies": {
