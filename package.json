@@ -9,7 +9,7 @@
   "license": "(MIT AND Apache-2.0)",
   "dependencies": {
     "@near-wallet-selector/core": "^6.0.1",
-    "@types/json-schema": "^7.0.11",
+    "@types/json-schema": "^7.0.15",
     "near-abi": "https://github.com/near/near-abi-js",
     "near-api-js": "^0.44.2"
   },
